@@ -1,0 +1,165 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Auto Game.ng</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+
+margin:0;
+
+font-family:Arial,sans-serif;
+
+background:#101827;
+
+color:white;
+
+text-align:center;
+
+}
+
+header{
+
+padding:25px;
+
+background:#087b45;
+
+font-size:27px;
+
+font-weight:bold;
+
+}
+
+main{padding:35px 20px}
+
+.card{
+
+background:#1e293b;
+
+padding:30px 20px;
+
+border-radius:18px;
+
+max-width:430px;
+
+margin:25px auto;
+
+}
+
+button{
+
+background:#10b981;
+
+border:0;
+
+padding:16px 35px;
+
+border-radius:10px;
+
+font-size:18px;
+
+font-weight:bold;
+
+color:white;
+
+cursor:pointer;
+
+}
+
+#score{font-size:45px;margin:25px}
+
+footer{padding:25px;color:#aaa;font-size:13px}
+
+</style>
+
+</head>
+
+<body>
+
+<header>🎮 AUTO GAME.NG</header>
+
+<main>
+
+<h1>Welcome to Auto Game.ng</h1>
+
+<p>Play, have fun and challenge yourself!</p>
+
+<div class="card">
+
+<h2>Tap Challenge</h2>
+
+<p>Tap the button as many times as you can.</p>
+
+<div id="score">0</div>
+
+<button id="play" onclick="tapGame()">START PLAYING</button>
+
+<p id="message">Your score will appear here.</p>
+
+</div>
+
+<p>Free-to-play game. Scores are for entertainment only.</p>
+
+</main>
+
+<footer>© 2026 Auto Game.ng. All rights reserved.</footer>
+
+<script>
+
+let score=0;
+
+let playing=false;
+
+let timer;
+
+function tapGame(){
+
+if(!playing){
+
+score=0;
+
+playing=true;
+
+document.getElementById("score").textContent=0;
+
+document.getElementById("play").textContent="TAP ME!";
+
+document.getElementById("message").textContent="Game started! You have 15 seconds.";
+
+timer=setTimeout(()=>{
+
+playing=false;
+
+document.getElementById("play").textContent="PLAY AGAIN";
+
+document.getElementById("message").textContent="Game over! Your score: "+score;
+
+},15000);
+
+}else{
+
+score++;
+
+document.getElementById("score").textContent=score;
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>
