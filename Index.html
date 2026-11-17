@@ -1,325 +1,183 @@
-<!DOCTYPE html>
-
+!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Auto Game.ng</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-
 *{box-sizing:border-box}
-
-body{margin:0;background:#10152b;color:white;font-family:Arial,sans-serif;text-align:center;padding:20px}
-
-.container{max-width:440px;margin:25px auto;background:#1c2545;padding:24px;border-radius:18px}
-
+body{margin:0;padding:20px;background:#10152b;color:white;font-family:Arial;text-align:center}
+.container{max-width:440px;margin:20px auto;padding:24px;background:#1c2545;border-radius:18px}
 h1{color:#ffd43b}
-
 input,button{width:100%;padding:14px;margin:8px 0;border:0;border-radius:9px;font-size:16px}
-
 input{background:white;color:#111}
-
 button{background:#ffd43b;color:#111;font-weight:bold;cursor:pointer}
-
-button:disabled{opacity:.5}
-
 .secondary{background:#344166;color:white}
-
 .hidden{display:none}
-
-#wheel{width:250px;height:250px;border-radius:50%;margin:20px auto;background:conic-gradient(#ffd43b 0 45deg,#e84b4b 45deg 90deg,#31b77a 90deg 135deg,#477be8 135deg 180deg,#ffd43b 180deg 225deg,#e84b4b 225deg 270deg,#31b77a 270deg 315deg,#477be8 315deg);border:7px solid white;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;color:#111;transition:transform 3s ease-out}
-
-.small{font-size:13px;color:#c9d1e8;line-height:1.5}
-
-#history{text-align:left;padding-left:20px}
-
+#wheel{width:250px;height:250px;max-width:80vw;max-height:80vw;border-radius:50%;margin:25px auto;background:conic-gradient(#ffd43b 0 45deg,#e84b4b 45deg 90deg,#31b77a 90deg 135deg,#477be8 135deg 180deg,#ffd43b 180deg 225deg,#e84b4b 225deg 270deg,#31b77a 270deg 315deg,#477be8 315deg);border:7px solid white;display:flex;align-items:center;justify-content:center;color:#111;font-weight:bold;font-size:24px;transition:transform 3s ease-out}
+.small{font-size:12px;color:#c9d1e8;line-height:1.5}
+#history{text-align:left}
 </style>
-
 </head>
-
 <body>
-
 <div class="container">
-
 <h1>AUTO GAME.NG</h1>
-
-<p>Play the spin game and enjoy simulated prizes!</p>
+<p>Play, spin and enjoy!</p>
 
 <div id="auth">
+ <div id="register">
+  <h2>Create Account</h2>
+  <input id="name" placeholder="Full name">
+  <input id="newuser" placeholder="Choose username">
+  <input id="newpass" type="password" placeholder="Create password">
+  <button onclick="register()">REGISTER</button>
+  <p>Already have an account?</p>
+  <button class="secondary" onclick="showLogin()">LOGIN</button>
+ </div>
 
-  <div id="register">
-
-    <h2>Create Account</h2>
-
-    <input id="name" placeholder="Your full name">
-
-    <input id="newuser" placeholder="Choose a username">
-
-    <input id="newpass" type="password" placeholder="Create password">
-
-    <button onclick="register()">Register</button>
-
-    <p>Already registered?</p>
-
-    <button class="secondary" onclick="showLogin()">Login</button>
-
-  </div>
-
-  <div id="login" class="hidden">
-
-    <h2>Welcome Back</h2>
-
-    <input id="username" placeholder="Username">
-
-    <input id="password" type="password" placeholder="Password">
-
-    <button onclick="login()">Login</button>
-
-    <button class="secondary" onclick="showRegister()">Create Account</button>
-
-  </div>
-
+ <div id="login" class="hidden">
+  <h2>Login</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">LOGIN</button>
+  <button class="secondary" onclick="showRegister()">CREATE ACCOUNT</button>
+ </div>
 </div>
 
 <div id="dashboard" class="hidden">
-
-  <h2 id="welcome"></h2>
-
-  <p>Welcome to your game dashboard!</p>
-
-  <h3>Spin and Win</h3>
-
-  <div id="wheel">SPIN</div>
-
-  <button id="spinBtn" onclick="spin()">SPIN NOW</button>
-
-  <h2 id="result"></h2>
-
-  <p class="small">Your game history</p>
-
-  <ul id="history"></ul>
-
-  <button class="secondary" onclick="logout()">Logout</button>
-
+ <h2 id="welcome"></h2>
+ <p>Your game dashboard</p>
+ <h3>SPIN AND WIN</h3>
+ <div id="wheel">SPIN</div>
+ <button id="spinBtn" onclick="spin()">SPIN NOW</button>
+ <h2 id="result"></h2>
+ <h3>Spin History</h3>
+ <ul id="history"></ul>
+ <button class="secondary" onclick="logout()">LOG OUT</button>
 </div>
 
-<p class="small">This is a simulated entertainment game. Displayed prizes are not real money, cannot be withdrawn, and are not cash awards. No deposits or payments are required.</p>
-
+<p class="small">Entertainment game only. All displayed prizes are simulated results, not real cash awards. No deposits or cash withdrawals are available.</p>
 </div>
 
 <script>
+const SUPABASE_URL="https://pqwsxxijdwgtndnyhouj.supabase.co";
+const SUPABASE_KEY="sb_publishable_dNO8dvUHSI288wwj96UoOg_v9p2GuXQ";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const SUPABASE_URL = "https://pqwsxxijdwgtndnyhouj.supabase.co";
-
-const SUPABASE_KEY = "sb_publishable_dNO8dvUHSI288wwj96UoOg_v9p2GuXQ";
-
-const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-
-const prizes = ["₦200","₦300","₦400","₦500","₦1,000","₦2,000","₦5,000","₦10,000"];
-
-let spinning = false;
+const prizes=["₦200","₦300","₦400","₦500","₦1,000","₦2,000","₦5,000","₦10,000"];
+let spinning=false;
 
 function internalEmail(username){
-
-  return username.trim().toLowerCase()+"@autogame.local";
-
+ return username.trim().toLowerCase()+"@autogame.invalid";
 }
-
-function validUsername(value){
-
-  return /^[a-z0-9_]{3,20}$/i.test(value);
-
+function validUsername(username){
+ return /^[a-z0-9_]{3,20}$/i.test(username);
 }
-
 function showLogin(){
-
-  document.getElementById("register").classList.add("hidden");
-
-  document.getElementById("login").classList.remove("hidden");
-
+ document.getElementById("register").classList.add("hidden");
+ document.getElementById("login").classList.remove("hidden");
 }
-
 function showRegister(){
-
-  document.getElementById("login").classList.add("hidden");
-
-  document.getElementById("register").classList.remove("hidden");
-
+ document.getElementById("login").classList.add("hidden");
+ document.getElementById("register").classList.remove("hidden");
 }
-
 async function register(){
+ const name=document.getElementById("name").value.trim();
+ const username=document.getElementById("newuser").value.trim();
+ const password=document.getElementById("newpass").value;
 
-  const name=document.getElementById("name").value.trim();
+ if(!name||!validUsername(username)||password.length<8){
+  alert("Enter your name, a username of 3–20 letters/numbers, and a password of at least 8 characters.");
+  return;
+ }
 
-  const username=document.getElementById("newuser").value.trim();
+ const {data,error}=await db.auth.signUp({
+  email:internalEmail(username),
+  password:password,
+  options:{data:{full_name:name,username:username.toLowerCase()}}
+ });
 
-  const password=document.getElementById("newpass").value;
-
-  if(!name || !validUsername(username) || password.length<8){
-
-    alert("Enter your name, a username of 3–20 letters/numbers, and a password of at least 8 characters.");
-
-    return;
-
-  }
-
-  const {data,error}=await db.auth.signUp({
-
-    email:internalEmail(username),
-
-    password,
-
-    options:{data:{full_name:name,username:username.toLowerCase()}}
-
-  });
-
-  if(error){alert(error.message);return;}
-
-  if(!data.session){
-
-    alert("Account created, but Supabase email confirmation must be disabled before username-only login can work. Please contact the site administrator.");
-
-    return;
-
-  }
-
-  openDashboard(data.user);
-
+ if(error){
+  alert("Registration error: "+error.message);
+  return;
+ }
+ if(!data.session){
+  alert("Account created. The administrator must disable email confirmation in Supabase before you can log in without email.");
+  showLogin();
+  return;
+ }
+ openDashboard(data.user);
 }
-
 async function login(){
+ const username=document.getElementById("username").value.trim();
+ const password=document.getElementById("password").value;
 
-  const username=document.getElementById("username").value.trim();
+ if(!validUsername(username)||!password){
+  alert("Enter your username and password.");
+  return;
+ }
 
-  const password=document.getElementById("password").value;
+ const {data,error}=await db.auth.signInWithPassword({
+  email:internalEmail(username),
+  password:password
+ });
 
-  if(!validUsername(username)||!password){
-
-    alert("Enter your username and password.");
-
-    return;
-
-  }
-
-  const {data,error}=await db.auth.signInWithPassword({
-
-    email:internalEmail(username),password
-
-  });
-
-  if(error){alert("Login failed. Check your username and password.");return;}
-
-  openDashboard(data.user);
-
+ if(error){
+  alert("Login failed. Please check your username and password.");
+  return;
+ }
+ openDashboard(data.user);
 }
-
 function openDashboard(user){
-
-  document.getElementById("auth").classList.add("hidden");
-
-  document.getElementById("dashboard").classList.remove("hidden");
-
-  const name=user.user_metadata?.full_name || user.user_metadata?.username || "Player";
-
-  document.getElementById("welcome").textContent="Welcome, "+name+"!";
-
-  showHistory(user.id);
-
+ document.getElementById("auth").classList.add("hidden");
+ document.getElementById("dashboard").classList.remove("hidden");
+ const name=user.user_metadata?.full_name||user.user_metadata?.username||"Player";
+ document.getElementById("welcome").textContent="Welcome, "+name+"!";
+ showHistory(user.id);
 }
-
 function showHistory(id){
-
-  const entries=JSON.parse(localStorage.getItem("game_"+id)||"[]");
-
-  const list=document.getElementById("history");
-
-  list.replaceChildren();
-
-  entries.forEach(item=>{
-
-    const li=document.createElement("li");
-
-    li.textContent=item;
-
-    list.appendChild(li);
-
-  });
-
+ const entries=JSON.parse(localStorage.getItem("game_"+id)||"[]");
+ const list=document.getElementById("history");
+ list.replaceChildren();
+ entries.forEach(item=>{
+  const li=document.createElement("li");
+  li.textContent=item;
+  list.appendChild(li);
+ });
 }
+async function spin(){
+ if(spinning)return;
+ spinning=true;
+ document.getElementById("spinBtn").disabled=true;
+ document.getElementById("result").textContent="Spinning...";
+ const index=Math.floor(Math.random()*prizes.length);
+ const wheel=document.getElementById("wheel");
+ wheel.style.transform="rotate("+(1800+index*45)+"deg)";
 
-function spin(){
-
-  if(spinning)return;
-
-  spinning=true;
-
-  const button=document.getElementById("spinBtn");
-
-  button.disabled=true;
-
-  document.getElementById("result").textContent="Spinning...";
-
-  const wheel=document.getElementById("wheel");
-
-  const index=Math.floor(Math.random()*prizes.length);
-
-  wheel.style.transform="rotate("+(1800+index*45)+"deg)";
-
-  setTimeout(async()=>{
-
-    const {data}=await db.auth.getUser();
-
-    if(data.user){
-
-      const prize=prizes[index];
-
-      document.getElementById("result").textContent="Congratulations! Your simulated result is "+prize;
-
-      const key="game_"+data.user.id;
-
-      const history=JSON.parse(localStorage.getItem(key)||"[]");
-
-      history.unshift(prize+" — simulated result");
-
-      localStorage.setItem(key,JSON.stringify(history.slice(0,20)));
-
-      showHistory(data.user.id);
-
-    }
-
-    spinning=false;
-
-    button.disabled=false;
-
-  },3100);
-
+ setTimeout(async()=>{
+  const {data}=await db.auth.getUser();
+  if(data.user){
+   const prize=prizes[index];
+   document.getElementById("result").textContent="Congratulations! Simulated result: "+prize;
+   const key="game_"+data.user.id;
+   const entries=JSON.parse(localStorage.getItem(key)||"[]");
+   entries.unshift(prize+" — simulated result");
+   localStorage.setItem(key,JSON.stringify(entries.slice(0,20)));
+   showHistory(data.user.id);
+  }
+  spinning=false;
+  document.getElementById("spinBtn").disabled=false;
+ },3100);
 }
-
 async function logout(){
-
-  await db.auth.signOut();
-
-  location.reload();
-
+ await db.auth.signOut();
+ location.reload();
 }
-
 (async()=>{
-
-  const {data}=await db.auth.getSession();
-
-  if(data.session)openDashboard(data.session.user);
-
+ const {data}=await db.auth.getSession();
+ if(data.session)openDashboard(data.session.user);
 })();
-
 </script>
-
 </body>
-
 </html>
