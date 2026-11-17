@@ -10,7 +10,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Auto Game.ng</title>
+<title>Auto Game.ng - Spin & Win</title>
 
 <style>
 
@@ -18,69 +18,107 @@
 
 body{
 
-margin:0;
+  margin:0;
 
-font-family:Arial,sans-serif;
+  font-family:Arial,sans-serif;
 
-background:#101827;
+  background:#071b14;
 
-color:white;
+  color:white;
 
-text-align:center;
+  text-align:center;
 
 }
 
 header{
 
-padding:25px;
+  padding:22px;
 
-background:#087b45;
+  background:#0c3022;
 
-font-size:27px;
+  font-size:25px;
 
-font-weight:bold;
+  font-weight:bold;
+
+  color:#43f59b;
 
 }
 
-main{padding:35px 20px}
+main{padding:25px 15px}
 
-.card{
+h1{font-size:30px}
 
-background:#1e293b;
+p{color:#c8d8d0}
 
-padding:30px 20px;
+.wheel-wrap{
 
-border-radius:18px;
+  position:relative;
 
-max-width:430px;
+  width:min(310px,85vw);
 
-margin:25px auto;
+  margin:30px auto;
+
+}
+
+canvas{width:100%;height:auto}
+
+.pointer{
+
+  position:absolute;
+
+  top:-12px;
+
+  left:50%;
+
+  transform:translateX(-50%);
+
+  color:#ffdf45;
+
+  font-size:35px;
+
+  z-index:2;
 
 }
 
 button{
 
-background:#10b981;
+  background:#35e98c;
 
-border:0;
+  color:#062317;
 
-padding:16px 35px;
+  border:0;
 
-border-radius:10px;
+  padding:16px 38px;
 
-font-size:18px;
+  border-radius:30px;
 
-font-weight:bold;
+  font-size:18px;
 
-color:white;
+  font-weight:bold;
 
-cursor:pointer;
+  cursor:pointer;
 
 }
 
-#score{font-size:45px;margin:25px}
+button:disabled{opacity:.5}
 
-footer{padding:25px;color:#aaa;font-size:13px}
+.result{
+
+  margin:22px auto;
+
+  padding:18px;
+
+  max-width:330px;
+
+  background:#103c2b;
+
+  border-radius:14px;
+
+  font-size:20px;
+
+}
+
+.small{font-size:12px;color:#9eb5a8}
 
 </style>
 
@@ -88,75 +126,175 @@ footer{padding:25px;color:#aaa;font-size:13px}
 
 <body>
 
-<header>🎮 AUTO GAME.NG</header>
+<header>AUTO GAME.NG</header>
 
 <main>
 
-<h1>Welcome to Auto Game.ng</h1>
+<h1>🎉 SPIN & WIN 🎉</h1>
 
-<p>Play, have fun and challenge yourself!</p>
+<p>Try your luck and enjoy the game!</p>
 
-<div class="card">
+<div class="wheel-wrap">
 
-<h2>Tap Challenge</h2>
+<div class="pointer">▼</div>
 
-<p>Tap the button as many times as you can.</p>
-
-<div id="score">0</div>
-
-<button id="play" onclick="tapGame()">START PLAYING</button>
-
-<p id="message">Your score will appear here.</p>
+<canvas id="wheel" width="600" height="600"></canvas>
 
 </div>
 
-<p>Free-to-play game. Scores are for entertainment only.</p>
+<button id="spin">SPIN NOW</button>
+
+<div class="result" id="result">
+
+Your result will appear here!
+
+</div>
+
+<p class="small">Free entertainment game. Points are for fun only.
+
+They have no cash value. No deposits or cash prizes are offered.</p>
 
 </main>
 
-<footer>© 2026 Auto Game.ng. All rights reserved.</footer>
-
 <script>
 
-let score=0;
+const canvas=document.getElementById("wheel");
 
-let playing=false;
+const ctx=canvas.getContext("2d");
 
-let timer;
+const prizes=["5 POINTS","10 POINTS","20 POINTS",
 
-function tapGame(){
+"TRY AGAIN","50 POINTS","15 POINTS"];
 
-if(!playing){
+const colors=["#16a765","#f4c542","#087c50",
 
-score=0;
+"#d94c4c","#20bd79","#b58b25"];
 
-playing=true;
+const slice=Math.PI*2/prizes.length;
 
-document.getElementById("score").textContent=0;
+let rotation=0;
 
-document.getElementById("play").textContent="TAP ME!";
+let spinning=false;
 
-document.getElementById("message").textContent="Game started! You have 15 seconds.";
+function draw(){
 
-timer=setTimeout(()=>{
+  ctx.clearRect(0,0,600,600);
 
-playing=false;
+  prizes.forEach((prize,i)=>{
 
-document.getElementById("play").textContent="PLAY AGAIN";
+    const start=rotation+i*slice;
 
-document.getElementById("message").textContent="Game over! Your score: "+score;
+    ctx.beginPath();
 
-},15000);
+    ctx.moveTo(300,300);
 
-}else{
+    ctx.arc(300,300,285,start,start+slice);
 
-score++;
+    ctx.closePath();
 
-document.getElementById("score").textContent=score;
+    ctx.fillStyle=colors[i];
+
+    ctx.fill();
+
+    ctx.strokeStyle="#ffffff";
+
+    ctx.lineWidth=5;
+
+    ctx.stroke();
+
+    ctx.save();
+
+    ctx.translate(300,300);
+
+    ctx.rotate(start+slice/2);
+
+    ctx.textAlign="right";
+
+    ctx.fillStyle="#ffffff";
+
+    ctx.font="bold 27px Arial";
+
+    ctx.fillText(prize,255,10);
+
+    ctx.restore();
+
+  });
+
+  ctx.beginPath();
+
+  ctx.arc(300,300,48,0,Math.PI*2);
+
+  ctx.fillStyle="#ffffff";
+
+  ctx.fill();
+
+  ctx.fillStyle="#07502f";
+
+  ctx.font="bold 24px Arial";
+
+  ctx.textAlign="center";
+
+  ctx.fillText("SPIN",300,308);
 
 }
 
-}
+draw();
+
+document.getElementById("spin").addEventListener("click",()=>{
+
+  if(spinning)return;
+
+  spinning=true;
+
+  const button=document.getElementById("spin");
+
+  const result=document.getElementById("result");
+
+  button.disabled=true;
+
+  result.textContent="Spinning...";
+
+  const winner=Math.floor(Math.random()*prizes.length);
+
+  const target=(Math.PI*2*5)+(Math.PI*2-(winner*slice+slice/2));
+
+  const start=rotation;
+
+  const finish=start+target;
+
+  const duration=4000;
+
+  const beginning=performance.now();
+
+  function animate(now){
+
+    const progress=Math.min((now-beginning)/duration,1);
+
+    const ease=1-Math.pow(1-progress,4);
+
+    rotation=start+(finish-start)*ease;
+
+    draw();
+
+    if(progress<1){
+
+      requestAnimationFrame(animate);
+
+    }else{
+
+      result.textContent="🎉 "+prizes[winner]+"!";
+
+      spinning=false;
+
+      button.disabled=false;
+
+    }
+
+  }
+
+  requestAnimationFrame(animate);
+
+});
 
 </script>
 
