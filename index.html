@@ -1,170 +1,747 @@
 
+
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
+<meta charset="UTF-8"<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Auto Game.ng - Spin & Win</title>
+
+<title>Auto Game.ng</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
+
 *{box-sizing:border-box}
-body{
- margin:0;background:#071b14;color:white;
- font-family:Arial,sans-serif;text-align:center
-}
-header{
- background:#0c3022;padding:22px;
- color:#43f59b;font-size:26px;font-weight:bold
-}
-main{padding:24px 14px}
-h1{font-size:29px}
-p{color:#c8d8d0}
-.wheel-wrap{
- width:min(330px,88vw);margin:30px auto;
- position:relative
-}
-canvas{width:100%;height:auto}
-.pointer{
- position:absolute;top:-13px;left:50%;
- transform:translateX(-50%);
- color:#ffdf45;font-size:38px;z-index:2
-}
-button{
- background:#35e98c;color:#062317;border:0;
- padding:16px 40px;border-radius:30px;
- font-size:19px;font-weight:bold;cursor:pointer
-}
-button:disabled{opacity:.5}
-.result{
- max-width:350px;margin:22px auto;padding:20px;
- background:#103c2b;border-radius:15px;
- font-size:21px;line-height:1.5
-}
-.notice{
- max-width:350px;margin:20px auto;
- font-size:12px;color:#a9bdb2;line-height:1.5
-}
+
+body{margin:0;background:#071b14;color:white;font-family:Arial,sans-serif;text-align:center}
+
+header{background:#0c3022;padding:22px;color:#43f59b;font-size:25px;font-weight:bold}
+
+main{padding:25px 15px}
+
+.panel{max-width:390px;margin:25px auto;background:#103c2b;padding:22px;border-radius:16px}
+
+input{display:block;width:100%;padding:14px;margin:12px 0;border:0;border-radius:8px;font-size:16px}
+
+button{background:#35e98c;color:#062317;border:0;padding:14px 25px;border-radius:25px;font-size:17px;font-weight:bold;cursor:pointer;margin:8px}
+
+.secondary{background:#d6e6dc}
+
+.hidden{display:none}
+
+.notice{font-size:12px;color:#b8cabe;line-height:1.5}
+
+#wheel{width:min(300px,85vw);height:auto}
+
+.result{background:#103c2b;padding:20px;border-radius:12px;margin:20px auto;max-width:350px}
+
 </style>
+
 </head>
+
 <body>
+
 <header>AUTO GAME.NG</header>
+
 <main>
-<h1>🎉 SPIN & WIN 🎉</h1>
-<p>Spin the wheel and discover your demo prize!</p>
 
-<div class="wheel-wrap">
- <div class="pointer">▼</div>
+<section id="auth">
+
+ <div class="panel">
+
+  <h2 id="formTitle">Create Your Account</h2>
+
+  <p>Register for free to play Auto Game.ng</p>
+
+  <form id="signupForm">
+
+   <input id="name" placeholder="Full name" required>
+
+   <input id="email" type="email" placeholder="Email address" required>
+
+   <input id="password" type="password" placeholder="Password (minimum 6 characters)" minlength="6" required>
+
+   <button type="submit">CREATE ACCOUNT</button>
+
+  </form>
+
+  <form id="loginForm" class="hidden">
+
+   <input id="loginEmail" type="email" placeholder="Email address" required>
+
+   <input id="loginPassword" type="password" placeholder="Password" required>
+
+   <button type="submit">LOGIN</button>
+
+  </form>
+
+  <p id="message" aria-live="polite"></p>
+
+  <button class="secondary" id="switchButton" type="button">Already registered? Login</button>
+
+ </div>
+
+</section>
+
+<section id="game" class="hidden">
+
+ <h1>🎉 SPIN & WIN 🎉</h1>
+
+ <p>Welcome! Enjoy your free game.</p>
+
  <canvas id="wheel" width="600" height="600"></canvas>
-</div>
 
-<button id="spin">SPIN NOW</button>
+ <br>
 
-<div class="result" id="result">
-Your prize will appear here!
-</div>
+ <button id="spin">SPIN NOW</button>
 
-<div class="notice">
-This is a free entertainment game. All displayed prizes
-are demo points only and have no cash value. No real
-money is awarded and no deposit is required.
-</div>
+ <div class="result" id="result">Your result will appear here!</div>
+
+ <button id="logout" class="secondary">LOG OUT</button>
+
+ <p class="notice">Free entertainment only. Prize amounts are simulated results, not real cash awards. No deposits or cash payouts are offered.</p>
+
+</section>
+
 </main>
 
 <script>
+
+const SUPABASE_URL = "https://pqwsxxijdwgtndnyhouj.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_dNO8dvUHSI288wwj96UoOg_v9p2GuXQ";
+
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const auth = document.getElementById("auth");
+
+const game = document.getElementById("game");
+
+const message = document.getElementById("message");
+
+const signupForm = document.getElementById("signupForm");
+
+const loginForm = document.getElementById("loginForm");
+
+const switchButton = document.getElementById("switchButton");
+
+let loginMode = false;
+
+function showMessage(text){
+
+ message.textContent=text;
+
+}
+
+function showGame(){
+
+ auth.classList.add("hidden");
+
+ game.classList.remove("hidden");
+
+}
+
+function showAuth(){
+
+ game.classList.add("hidden");
+
+ auth.classList.remove("hidden");
+
+}
+
+switchButton.addEventListener("click",()=>{
+
+ loginMode=!loginMode;
+
+ signupForm.classList.toggle("hidden",loginMode);
+
+ loginForm.classList.toggle("hidden",!loginMode);
+
+ document.getElementById("formTitle").textContent=
+
+ loginMode?"Welcome Back":"Create Your Account";
+
+ switchButton.textContent=loginMode?
+
+ "New here? Create an account":"Already registered? Login";
+
+ showMessage("");
+
+});
+
+signupForm.addEventListener("submit",async(e)=>{
+
+ e.preventDefault();
+
+ showMessage("Creating your account...");
+
+ const name=document.getElementById("name").value.trim();
+
+ const email=document.getElementById("email").value.trim();
+
+ const password=document.getElementById("password").value;
+
+ const {data,error}=await db.auth.signUp({
+
+  email,password,
+
+  options:{data:{full_name:name}}
+
+ });
+
+ if(error){showMessage(error.message);return;}
+
+ if(data.session){
+
+  showGame();
+
+ }else{
+
+  showMessage("Registration received! Check your email to confirm your account, then log in.");
+
+ }
+
+});
+
+loginForm.addEventListener("submit",async(e)=>{
+
+ e.preventDefault();
+
+ showMessage("Logging in...");
+
+ const email=document.getElementById("loginEmail").value.trim();
+
+ const password=document.getElementById("loginPassword").value;
+
+ const {error}=await db.auth.signInWithPassword({email,password});
+
+ if(error){showMessage(error.message);return;}
+
+ showGame();
+
+});
+
+document.getElementById("logout").addEventListener("click",async()=>{
+
+ await db.auth.signOut();
+
+ showAuth();
+
+});
+
+db.auth.getSession().then(({data})=>{
+
+ if(data.session)showGame();
+
+});
+
 const canvas=document.getElementById("wheel");
+
 const ctx=canvas.getContext("2d");
 
-const prizes=[
- "10K","20K","50K","100K",
- "200K","500K","1M"
-];
+const prizes=["10K","20K","50K","100K","200K","500K","1M"];
 
-const colors=[
- "#16a765","#f4c542","#087c50",
- "#d94c4c","#20bd79","#b58b25","#1687a5"
-];
+const colors=["#16a765","#f4c542","#087c50","#d94c4c","#20bd79","#b58b25","#1687a5"];
 
-const slice=Math.PI*2/prizes.length;
-let rotation=0;
-let spinning=false;
+const slice=2*Math.PI/prizes.length;
+
+let rotation=0,spinning=false;
 
 function draw(){
+
  ctx.clearRect(0,0,600,600);
 
- prizes.forEach((prize,i)=>{
+ prizes.forEach((p,i)=>{
+
   const start=rotation+i*slice;
+
   ctx.beginPath();
+
   ctx.moveTo(300,300);
+
   ctx.arc(300,300,285,start,start+slice);
+
   ctx.closePath();
+
   ctx.fillStyle=colors[i];
+
   ctx.fill();
-  ctx.strokeStyle="#fff";
+
+  ctx.strokeStyle="white";
+
   ctx.lineWidth=5;
+
   ctx.stroke();
 
   ctx.save();
+
   ctx.translate(300,300);
+
   ctx.rotate(start+slice/2);
+
   ctx.textAlign="right";
-  ctx.fillStyle="#fff";
-  ctx.font="bold 29px Arial";
-  ctx.fillText(prize,255,10);
+
+  ctx.fillStyle="white";
+
+  ctx.font="bold 28px Arial";
+
+  ctx.fillText(p,255,10);
+
   ctx.restore();
+
  });
 
  ctx.beginPath();
+
  ctx.arc(300,300,48,0,Math.PI*2);
- ctx.fillStyle="#fff";
+
+ ctx.fillStyle="white";
+
  ctx.fill();
+
  ctx.fillStyle="#07502f";
+
  ctx.font="bold 24px Arial";
+
  ctx.textAlign="center";
+
  ctx.fillText("SPIN",300,308);
+
 }
 
 draw();
 
 document.getElementById("spin").addEventListener("click",()=>{
+
  if(spinning)return;
 
  spinning=true;
+
  const button=document.getElementById("spin");
+
  const result=document.getElementById("result");
 
  button.disabled=true;
- result.textContent="Good luck! Spinning...";
+
+ result.textContent="Spinning...";
 
  const winner=Math.floor(Math.random()*prizes.length);
- const target=Math.PI*2*5+
-  (Math.PI*2-(winner*slice+slice/2));
 
  const start=rotation;
- const finish=start+target;
- const duration=4000;
+
+ const finish=start+Math.PI*2*5+
+
+ (Math.PI*2-(winner*slice+slice/2));
+
  const beginning=performance.now();
 
  function animate(now){
-  const progress=Math.min((now-beginning)/duration,1);
-  const ease=1-Math.pow(1-progress,4);
 
-  rotation=start+(finish-start)*ease;
+  const progress=Math.min((now-beginning)/4000,1);
+
+  rotation=start+(finish-start)*(1-Math.pow(1-progress,4));
+
   draw();
 
   if(progress<1){
+
    requestAnimationFrame(animate);
+
   }else{
-   result.innerHTML=
-    "🎉 Congratulations! 🎉<br><br>"+
-    "You got "+prizes[winner]+" demo points!<br><br>"+
-    "You can now grab your demo prize!";
+
+   result.textContent="Congratulations! You landed on "+prizes[winner]+" simulated prize points. No cash payout is available.";
 
    spinning=false;
+
    button.disabled=false;
+
   }
+
  }
 
  requestAnimationFrame(animate);
+
 });
+
 </script>
+
 </body>
+
+</html>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Auto Game.ng</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{margin:0;background:#071b14;color:white;font-family:Arial,sans-serif;text-align:center}
+
+header{background:#0c3022;padding:22px;color:#43f59b;font-size:25px;font-weight:bold}
+
+main{padding:25px 15px}
+
+.panel{max-width:390px;margin:25px auto;background:#103c2b;padding:22px;border-radius:16px}
+
+input{display:block;width:100%;padding:14px;margin:12px 0;border:0;border-radius:8px;font-size:16px}
+
+button{background:#35e98c;color:#062317;border:0;padding:14px 25px;border-radius:25px;font-size:17px;font-weight:bold;cursor:pointer;margin:8px}
+
+.secondary{background:#d6e6dc}
+
+.hidden{display:none}
+
+.notice{font-size:12px;color:#b8cabe;line-height:1.5}
+
+#wheel{width:min(300px,85vw);height:auto}
+
+.result{background:#103c2b;padding:20px;border-radius:12px;margin:20px auto;max-width:350px}
+
+</style>
+
+</head>
+
+<body>
+
+<header>AUTO GAME.NG</header>
+
+<main>
+
+<section id="auth">
+
+ <div class="panel">
+
+  <h2 id="formTitle">Create Your Account</h2>
+
+  <p>Register for free to play Auto Game.ng</p>
+
+  <form id="signupForm">
+
+   <input id="name" placeholder="Full name" required>
+
+   <input id="email" type="email" placeholder="Email address" required>
+
+   <input id="password" type="password" placeholder="Password (minimum 6 characters)" minlength="6" required>
+
+   <button type="submit">CREATE ACCOUNT</button>
+
+  </form>
+
+  <form id="loginForm" class="hidden">
+
+   <input id="loginEmail" type="email" placeholder="Email address" required>
+
+   <input id="loginPassword" type="password" placeholder="Password" required>
+
+   <button type="submit">LOGIN</button>
+
+  </form>
+
+  <p id="message" aria-live="polite"></p>
+
+  <button class="secondary" id="switchButton" type="button">Already registered? Login</button>
+
+ </div>
+
+</section>
+
+<section id="game" class="hidden">
+
+ <h1>🎉 SPIN & WIN 🎉</h1>
+
+ <p>Welcome! Enjoy your free game.</p>
+
+ <canvas id="wheel" width="600" height="600"></canvas>
+
+ <br>
+
+ <button id="spin">SPIN NOW</button>
+
+ <div class="result" id="result">Your result will appear here!</div>
+
+ <button id="logout" class="secondary">LOG OUT</button>
+
+ <p class="notice">Free entertainment only. Prize amounts are simulated results, not real cash awards. No deposits or cash payouts are offered.</p>
+
+</section>
+
+</main>
+
+<script>
+
+const SUPABASE_URL = "https://pqwsxxijdwgtndnyhouj.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_dNO8dvUHSI288wwj96UoOg_v9p2GuXQ";
+
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const auth = document.getElementById("auth");
+
+const game = document.getElementById("game");
+
+const message = document.getElementById("message");
+
+const signupForm = document.getElementById("signupForm");
+
+const loginForm = document.getElementById("loginForm");
+
+const switchButton = document.getElementById("switchButton");
+
+let loginMode = false;
+
+function showMessage(text){
+
+ message.textContent=text;
+
+}
+
+function showGame(){
+
+ auth.classList.add("hidden");
+
+ game.classList.remove("hidden");
+
+}
+
+function showAuth(){
+
+ game.classList.add("hidden");
+
+ auth.classList.remove("hidden");
+
+}
+
+switchButton.addEventListener("click",()=>{
+
+ loginMode=!loginMode;
+
+ signupForm.classList.toggle("hidden",loginMode);
+
+ loginForm.classList.toggle("hidden",!loginMode);
+
+ document.getElementById("formTitle").textContent=
+
+ loginMode?"Welcome Back":"Create Your Account";
+
+ switchButton.textContent=loginMode?
+
+ "New here? Create an account":"Already registered? Login";
+
+ showMessage("");
+
+});
+
+signupForm.addEventListener("submit",async(e)=>{
+
+ e.preventDefault();
+
+ showMessage("Creating your account...");
+
+ const name=document.getElementById("name").value.trim();
+
+ const email=document.getElementById("email").value.trim();
+
+ const password=document.getElementById("password").value;
+
+ const {data,error}=await db.auth.signUp({
+
+  email,password,
+
+  options:{data:{full_name:name}}
+
+ });
+
+ if(error){showMessage(error.message);return;}
+
+ if(data.session){
+
+  showGame();
+
+ }else{
+
+  showMessage("Registration received! Check your email to confirm your account, then log in.");
+
+ }
+
+});
+
+loginForm.addEventListener("submit",async(e)=>{
+
+ e.preventDefault();
+
+ showMessage("Logging in...");
+
+ const email=document.getElementById("loginEmail").value.trim();
+
+ const password=document.getElementById("loginPassword").value;
+
+ const {error}=await db.auth.signInWithPassword({email,password});
+
+ if(error){showMessage(error.message);return;}
+
+ showGame();
+
+});
+
+document.getElementById("logout").addEventListener("click",async()=>{
+
+ await db.auth.signOut();
+
+ showAuth();
+
+});
+
+db.auth.getSession().then(({data})=>{
+
+ if(data.session)showGame();
+
+});
+
+const canvas=document.getElementById("wheel");
+
+const ctx=canvas.getContext("2d");
+
+const prizes=["10K","20K","50K","100K","200K","500K","1M"];
+
+const colors=["#16a765","#f4c542","#087c50","#d94c4c","#20bd79","#b58b25","#1687a5"];
+
+const slice=2*Math.PI/prizes.length;
+
+let rotation=0,spinning=false;
+
+function draw(){
+
+ ctx.clearRect(0,0,600,600);
+
+ prizes.forEach((p,i)=>{
+
+  const start=rotation+i*slice;
+
+  ctx.beginPath();
+
+  ctx.moveTo(300,300);
+
+  ctx.arc(300,300,285,start,start+slice);
+
+  ctx.closePath();
+
+  ctx.fillStyle=colors[i];
+
+  ctx.fill();
+
+  ctx.strokeStyle="white";
+
+  ctx.lineWidth=5;
+
+  ctx.stroke();
+
+  ctx.save();
+
+  ctx.translate(300,300);
+
+  ctx.rotate(start+slice/2);
+
+  ctx.textAlign="right";
+
+  ctx.fillStyle="white";
+
+  ctx.font="bold 28px Arial";
+
+  ctx.fillText(p,255,10);
+
+  ctx.restore();
+
+ });
+
+ ctx.beginPath();
+
+ ctx.arc(300,300,48,0,Math.PI*2);
+
+ ctx.fillStyle="white";
+
+ ctx.fill();
+
+ ctx.fillStyle="#07502f";
+
+ ctx.font="bold 24px Arial";
+
+ ctx.textAlign="center";
+
+ ctx.fillText("SPIN",300,308);
+
+}
+
+draw();
+
+document.getElementById("spin").addEventListener("click",()=>{
+
+ if(spinning)return;
+
+ spinning=true;
+
+ const button=document.getElementById("spin");
+
+ const result=document.getElementById("result");
+
+ button.disabled=true;
+
+ result.textContent="Spinning...";
+
+ const winner=Math.floor(Math.random()*prizes.length);
+
+ const start=rotation;
+
+ const finish=start+Math.PI*2*5+
+
+ (Math.PI*2-(winner*slice+slice/2));
+
+ const beginning=performance.now();
+
+ function animate(now){
+
+  const progress=Math.min((now-beginning)/4000,1);
+
+  rotation=start+(finish-start)*(1-Math.pow(1-progress,4));
+
+  draw();
+
+  if(progress<1){
+
+   requestAnimationFrame(animate);
+
+  }else{
+
+   result.textContent="Congratulations! You landed on "+prizes[winner]+" simulated prize points. No cash payout is available.";
+
+   spinning=false;
+
+   button.disabled=false;
+
+  }
+
+ }
+
+ requestAnimationFrame(animate);
+
+});
+
+</script>
+
+</body>
+
 </html>
