@@ -1,303 +1,170 @@
 
-
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Auto Game.ng - Spin & Win</title>
-
 <style>
-
 *{box-sizing:border-box}
-
 body{
-
-  margin:0;
-
-  font-family:Arial,sans-serif;
-
-  background:#071b14;
-
-  color:white;
-
-  text-align:center;
-
+ margin:0;background:#071b14;color:white;
+ font-family:Arial,sans-serif;text-align:center
 }
-
 header{
-
-  padding:22px;
-
-  background:#0c3022;
-
-  font-size:25px;
-
-  font-weight:bold;
-
-  color:#43f59b;
-
+ background:#0c3022;padding:22px;
+ color:#43f59b;font-size:26px;font-weight:bold
 }
-
-main{padding:25px 15px}
-
-h1{font-size:30px}
-
+main{padding:24px 14px}
+h1{font-size:29px}
 p{color:#c8d8d0}
-
 .wheel-wrap{
-
-  position:relative;
-
-  width:min(310px,85vw);
-
-  margin:30px auto;
-
+ width:min(330px,88vw);margin:30px auto;
+ position:relative
 }
-
 canvas{width:100%;height:auto}
-
 .pointer{
-
-  position:absolute;
-
-  top:-12px;
-
-  left:50%;
-
-  transform:translateX(-50%);
-
-  color:#ffdf45;
-
-  font-size:35px;
-
-  z-index:2;
-
+ position:absolute;top:-13px;left:50%;
+ transform:translateX(-50%);
+ color:#ffdf45;font-size:38px;z-index:2
 }
-
 button{
-
-  background:#35e98c;
-
-  color:#062317;
-
-  border:0;
-
-  padding:16px 38px;
-
-  border-radius:30px;
-
-  font-size:18px;
-
-  font-weight:bold;
-
-  cursor:pointer;
-
+ background:#35e98c;color:#062317;border:0;
+ padding:16px 40px;border-radius:30px;
+ font-size:19px;font-weight:bold;cursor:pointer
 }
-
 button:disabled{opacity:.5}
-
 .result{
-
-  margin:22px auto;
-
-  padding:18px;
-
-  max-width:330px;
-
-  background:#103c2b;
-
-  border-radius:14px;
-
-  font-size:20px;
-
+ max-width:350px;margin:22px auto;padding:20px;
+ background:#103c2b;border-radius:15px;
+ font-size:21px;line-height:1.5
 }
-
-.small{font-size:12px;color:#9eb5a8}
-
+.notice{
+ max-width:350px;margin:20px auto;
+ font-size:12px;color:#a9bdb2;line-height:1.5
+}
 </style>
-
 </head>
-
 <body>
-
 <header>AUTO GAME.NG</header>
-
 <main>
-
 <h1>🎉 SPIN & WIN 🎉</h1>
-
-<p>Try your luck and enjoy the game!</p>
+<p>Spin the wheel and discover your demo prize!</p>
 
 <div class="wheel-wrap">
-
-<div class="pointer">▼</div>
-
-<canvas id="wheel" width="600" height="600"></canvas>
-
+ <div class="pointer">▼</div>
+ <canvas id="wheel" width="600" height="600"></canvas>
 </div>
 
 <button id="spin">SPIN NOW</button>
 
 <div class="result" id="result">
-
-Your result will appear here!
-
+Your prize will appear here!
 </div>
 
-<p class="small">Free entertainment game. Points are for fun only.
-
-They have no cash value. No deposits or cash prizes are offered.</p>
-
+<div class="notice">
+This is a free entertainment game. All displayed prizes
+are demo points only and have no cash value. No real
+money is awarded and no deposit is required.
+</div>
 </main>
 
 <script>
-
 const canvas=document.getElementById("wheel");
-
 const ctx=canvas.getContext("2d");
 
-const prizes=["5 POINTS","10 POINTS","20 POINTS",
+const prizes=[
+ "10K","20K","50K","100K",
+ "200K","500K","1M"
+];
 
-"TRY AGAIN","50 POINTS","15 POINTS"];
-
-const colors=["#16a765","#f4c542","#087c50",
-
-"#d94c4c","#20bd79","#b58b25"];
+const colors=[
+ "#16a765","#f4c542","#087c50",
+ "#d94c4c","#20bd79","#b58b25","#1687a5"
+];
 
 const slice=Math.PI*2/prizes.length;
-
 let rotation=0;
-
 let spinning=false;
 
 function draw(){
+ ctx.clearRect(0,0,600,600);
 
-  ctx.clearRect(0,0,600,600);
-
-  prizes.forEach((prize,i)=>{
-
-    const start=rotation+i*slice;
-
-    ctx.beginPath();
-
-    ctx.moveTo(300,300);
-
-    ctx.arc(300,300,285,start,start+slice);
-
-    ctx.closePath();
-
-    ctx.fillStyle=colors[i];
-
-    ctx.fill();
-
-    ctx.strokeStyle="#ffffff";
-
-    ctx.lineWidth=5;
-
-    ctx.stroke();
-
-    ctx.save();
-
-    ctx.translate(300,300);
-
-    ctx.rotate(start+slice/2);
-
-    ctx.textAlign="right";
-
-    ctx.fillStyle="#ffffff";
-
-    ctx.font="bold 27px Arial";
-
-    ctx.fillText(prize,255,10);
-
-    ctx.restore();
-
-  });
-
+ prizes.forEach((prize,i)=>{
+  const start=rotation+i*slice;
   ctx.beginPath();
-
-  ctx.arc(300,300,48,0,Math.PI*2);
-
-  ctx.fillStyle="#ffffff";
-
+  ctx.moveTo(300,300);
+  ctx.arc(300,300,285,start,start+slice);
+  ctx.closePath();
+  ctx.fillStyle=colors[i];
   ctx.fill();
+  ctx.strokeStyle="#fff";
+  ctx.lineWidth=5;
+  ctx.stroke();
 
-  ctx.fillStyle="#07502f";
+  ctx.save();
+  ctx.translate(300,300);
+  ctx.rotate(start+slice/2);
+  ctx.textAlign="right";
+  ctx.fillStyle="#fff";
+  ctx.font="bold 29px Arial";
+  ctx.fillText(prize,255,10);
+  ctx.restore();
+ });
 
-  ctx.font="bold 24px Arial";
-
-  ctx.textAlign="center";
-
-  ctx.fillText("SPIN",300,308);
-
+ ctx.beginPath();
+ ctx.arc(300,300,48,0,Math.PI*2);
+ ctx.fillStyle="#fff";
+ ctx.fill();
+ ctx.fillStyle="#07502f";
+ ctx.font="bold 24px Arial";
+ ctx.textAlign="center";
+ ctx.fillText("SPIN",300,308);
 }
 
 draw();
 
 document.getElementById("spin").addEventListener("click",()=>{
+ if(spinning)return;
 
-  if(spinning)return;
+ spinning=true;
+ const button=document.getElementById("spin");
+ const result=document.getElementById("result");
 
-  spinning=true;
+ button.disabled=true;
+ result.textContent="Good luck! Spinning...";
 
-  const button=document.getElementById("spin");
+ const winner=Math.floor(Math.random()*prizes.length);
+ const target=Math.PI*2*5+
+  (Math.PI*2-(winner*slice+slice/2));
 
-  const result=document.getElementById("result");
+ const start=rotation;
+ const finish=start+target;
+ const duration=4000;
+ const beginning=performance.now();
 
-  button.disabled=true;
+ function animate(now){
+  const progress=Math.min((now-beginning)/duration,1);
+  const ease=1-Math.pow(1-progress,4);
 
-  result.textContent="Spinning...";
+  rotation=start+(finish-start)*ease;
+  draw();
 
-  const winner=Math.floor(Math.random()*prizes.length);
+  if(progress<1){
+   requestAnimationFrame(animate);
+  }else{
+   result.innerHTML=
+    "🎉 Congratulations! 🎉<br><br>"+
+    "You got "+prizes[winner]+" demo points!<br><br>"+
+    "You can now grab your demo prize!";
 
-  const target=(Math.PI*2*5)+(Math.PI*2-(winner*slice+slice/2));
-
-  const start=rotation;
-
-  const finish=start+target;
-
-  const duration=4000;
-
-  const beginning=performance.now();
-
-  function animate(now){
-
-    const progress=Math.min((now-beginning)/duration,1);
-
-    const ease=1-Math.pow(1-progress,4);
-
-    rotation=start+(finish-start)*ease;
-
-    draw();
-
-    if(progress<1){
-
-      requestAnimationFrame(animate);
-
-    }else{
-
-      result.textContent="🎉 "+prizes[winner]+"!";
-
-      spinning=false;
-
-      button.disabled=false;
-
-    }
-
+   spinning=false;
+   button.disabled=false;
   }
+ }
 
-  requestAnimationFrame(animate);
-
+ requestAnimationFrame(animate);
 });
-
 </script>
-
 </body>
-
 </html>
